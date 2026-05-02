@@ -1,0 +1,41 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import pickle
+
+# Load saved model
+model = pickle.load(open('crop_model.pkl', 'rb'))
+labels = pickle.load(open('labels.pkl', 'rb'))
+
+# Title
+st.title("🌾 Crop Recommendation System")
+
+# Instruction
+st.write("Enter soil details below:")
+
+# Inputs from user
+N = st.number_input("Nitrogen (N)")
+P = st.number_input("Phosphorus (P)")
+K = st.number_input("Potassium (K)")
+temperature = st.number_input("Temperature")
+humidity = st.number_input("Humidity")
+ph = st.number_input("pH")
+rainfall = st.number_input("Rainfall")
+
+# Button
+if st.button("Predict Crop"):
+
+    # Create input data
+    input_data = pd.DataFrame([[N, P, K, temperature, humidity, ph, rainfall]],
+                              columns=['N','P','K','temperature','humidity','ph','rainfall'])
+
+    # Predict probabilities
+    probs = model.predict_proba(input_data)[0]
+
+    # Get top 3 crops
+    top3 = np.argsort(probs)[-3:][::-1]
+
+    st.subheader("🌾 Recommended Crops:")
+
+    for i in top3:
+        st.write(labels[i], ":", round(probs[i], 2))
